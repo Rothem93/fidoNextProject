@@ -15,6 +15,9 @@
     "express": "^4.15.4",
     "fs": "^0.0.1-security"
   },
+  "engines": {
+    "node": "14.15.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fido-alliance/"
