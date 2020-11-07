@@ -1,0 +1,5 @@
+{
+    "port": 3000,
+    "portHttps": 3030,
+    "origin": "http://localhost:3000"
+}
