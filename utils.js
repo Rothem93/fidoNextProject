@@ -198,7 +198,7 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
     let ctapMakeCredResp  = cbor.decodeAllSync(attestationBuffer)[0];
 
     let response = {'verified': false};
-    if(ctapMakeCredResp.fmt === 'fido-u2f') {
+    if(ctapMakeCredResp.fmt === 'packed') {
         let authrDataStruct = parseMakeCredAuthData(ctapMakeCredResp.authData);
 
         if(!(authrDataStruct.flags & U2F_USER_PRESENTED))
@@ -216,7 +216,7 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
 
         if(response.verified) {
             response.authrInfo = {
-                fmt: 'fido-u2f',
+                fmt: 'packed',
                 publicKey: base64url.encode(publicKey),
                 counter: authrDataStruct.counter,
                 credID: base64url.encode(authrDataStruct.credID)
@@ -263,7 +263,7 @@ let verifyAuthenticatorAssertionResponse = (webAuthnResponse, authenticators) =>
     let authenticatorData = base64url.toBuffer(webAuthnResponse.response.authenticatorData);
 
     let response = {'verified': false};
-    if(authr.fmt === 'fido-u2f') {
+    if(authr.fmt === 'packed') {
         let authrDataStruct  = parseGetAssertAuthData(authenticatorData);
 
         if(!(authrDataStruct.flags & U2F_USER_PRESENTED))
