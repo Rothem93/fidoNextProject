@@ -85,6 +85,8 @@ router.post('/response', (request, response) => {
         return
     }
 
+    console.log("ENTRA EN /RESPONSE")
+
     let webauthnResp = request.body
     let clientData   = JSON.parse(base64url.decode(webauthnResp.response.clientDataJSON));
 
