@@ -109,6 +109,7 @@ router.post('/response', (request, response) => {
         /* This is create cred */
         console.log(webauthnResp)
         result = utils.verifyAuthenticatorAttestationResponse(webauthnResp);
+        console.log(result)
 
         if(result.verified) {
             database[request.session.username].authenticators.push(result.authrInfo);
