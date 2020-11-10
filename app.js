@@ -10,8 +10,6 @@ const config        = require('./config.json');
 const defaultroutes = require('./routes/default');
 const passwordauth  = require('./routes/password');
 const webuathnauth  = require('./routes/webauthn.js');
-const PORT = process.env.PORT || 5000
-
 
 const app           = express();
 
@@ -34,7 +32,8 @@ app.use('/', defaultroutes)
 app.use('/password', passwordauth)
 app.use('/webauthn', webuathnauth)
 
-app.listen(PORT);
-console.log(`Started app on port ${PORT}`);
+const port = config.port || 3000;
+app.listen(port);
+console.log(`Started app on port ${port}`);
 
 module.exports = app;
