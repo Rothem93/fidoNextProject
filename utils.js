@@ -76,7 +76,7 @@ let generateServerGetAssertion = (authenticators) => {
         allowCredentials.push({
               type: 'public-key',
               id: authr.credID,
-              transports: ['usb', 'nfc', 'ble', 'internal']
+              transports: ['internal']
         })
     }
     return {
