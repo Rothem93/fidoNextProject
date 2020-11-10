@@ -222,7 +222,7 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
                 credID: base64url.encode(authrDataStruct.credID)
             }
         }
-    } else if((ctapMakeCredResp.fmt === 'packed' || ctapMakeCredResp.fmt === 'android-safetynet') && ctapMakeCredResp.attStmt.hasOwnProperty('x5c')) {
+    } else if(ctapMakeCredResp.fmt === 'packed' && ctapMakeCredResp.attStmt.hasOwnProperty('x5c')) {
         let authrDataStruct = parseMakeCredAuthData(ctapMakeCredResp.authData);
 
         if(!(authrDataStruct.flags & U2F_USER_PRESENTED))
@@ -245,7 +245,37 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
                 credID: base64url.encode(authrDataStruct.credID)
             }
         }
-    } else {
+    } else if(ctapMakeCredResp.fmt === 'android-safetynet' && ctapMakeCredResp.attStmt.hasOwnProperty('x5c')) {
+        console.log("---------------------------android-safetynet-----------------------------")
+        let authrDataStruct = parseMakeCredAuthData(ctapMakeCredResp.authData);
+        console.log("---------------------------android-safetynet2-----------------------------")
+        let clientDataHash  = hash(base64url.toBuffer(webAuthnResponse.response.clientDataJSON))
+        console.log("---------------------------android-safetynet3-----------------------------")
+        let publicKey       = COSEECDHAtoPKCS(authrDataStruct.COSEPublicKey)
+        console.log("---------------------------android-safetynet4-----------------------------")
+        let signatureBase   = Buffer.concat([ctapMakeCredResp.authData, clientDataHash]);
+        console.log("---------------------------android-safetynet5-----------------------------")
+
+        let PEMCertificate = ASN1toPEM(ctapMakeCredResp.attStmt.x5c[0]);
+        console.log("---------------------------android-safetynet6-----------------------------")
+        let signature      = ctapMakeCredResp.attStmt.sig;
+        console.log("---------------------------android-safetynet7-----------------------------")
+
+        response.verified = verifySignature(signature, signatureBase, PEMCertificate)
+        console.log("---------------------------android-safetynet8-----------------------------")
+
+
+        if(response.verified) {
+            response.authrInfo = {
+                fmt: 'fido-u2f',
+                publicKey: base64url.encode(publicKey),
+                counter: authrDataStruct.counter,
+                credID: base64url.encode(authrDataStruct.credID)
+            }
+        }
+
+    }
+    else {
         console.log("ctapMakeCredResp", ctapMakeCredResp)
         console.log("ctapMakeCredResp.fmt", ctapMakeCredResp.fmt)
         throw new Error('Unsupported attestation format! ' + ctapMakeCredResp.fmt);
