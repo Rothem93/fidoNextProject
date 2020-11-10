@@ -32,8 +32,8 @@ app.use('/', defaultroutes)
 app.use('/password', passwordauth)
 app.use('/webauthn', webuathnauth)
 
-const port = config.port || 5000;
-app.listen(port);
-console.log(`Started app on port ${port}`);
+const PORT = process.env.PORT || 5000
+app.listen(PORT);
+console.log(`Started app on port ${PORT}`);
 
 module.exports = app;
