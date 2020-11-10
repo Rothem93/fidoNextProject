@@ -107,6 +107,9 @@ router.post('/response', (request, response) => {
     }
 
     let result;
+
+    console.log("Origin y challenge confirmados")
+
     if(webauthnResp.response.attestationObject !== undefined) {
         /* This is create cred */
         console.log(webauthnResp)
@@ -117,9 +120,11 @@ router.post('/response', (request, response) => {
             database[request.session.username].authenticators.push(result.authrInfo);
             database[request.session.username].registered = true
         }
+        console.log("webauthnResp.response.attestationObject !== undefined")
     } else if(webauthnResp.response.authenticatorData !== undefined) {
         /* This is get assertion */
         result = utils.verifyAuthenticatorAssertionResponse(webauthnResp, database[request.session.username].authenticators);
+        console.log("This is get assertion ")
     } else {
         response.json({
             'status': 'failed',
