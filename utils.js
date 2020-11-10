@@ -222,7 +222,7 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
                 credID: base64url.encode(authrDataStruct.credID)
             }
         }
-    } else if(ctapMakeCredResp.fmt === 'packed' && ctapMakeCredResp.attStmt.hasOwnProperty('x5c')) {
+    } else if((ctapMakeCredResp.fmt === 'packed' || ctapMakeCredResp.fmt === 'android-safetynet')&& ctapMakeCredResp.attStmt.hasOwnProperty('x5c')) {
         let authrDataStruct = parseMakeCredAuthData(ctapMakeCredResp.authData);
 
         if(!(authrDataStruct.flags & U2F_USER_PRESENTED))
