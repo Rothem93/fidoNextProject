@@ -27,7 +27,7 @@ app.use(cookieParser())
 
 /* ----- serve static ----- */
 app.use(express.static(path.join(__dirname, 'static')));
-
+app.use(Cors({ origin: ["https://fidotestingnext.herokuapp.com"], credentials: true }))
 app.use('/', defaultroutes)
 app.use('/password', passwordauth)
 app.use('/webauthn', webuathnauth)
