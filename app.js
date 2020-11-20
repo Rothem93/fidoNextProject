@@ -1,5 +1,7 @@
 const express       = require('express');
 const bodyParser    = require('body-parser');
+const cors = require('cors')
+
 const cookieSession = require('cookie-session');
 const cookieParser  = require('cookie-parser');
 const urllib        = require('url');
@@ -12,6 +14,7 @@ const passwordauth  = require('./routes/password');
 const webuathnauth  = require('./routes/webauthn.js');
 
 const app           = express();
+app.use(cors({ origin: ["https://fidotestingnext.herokuapp.com"], credentials: true }))
 
 app.use(bodyParser.json());
 
@@ -27,7 +30,6 @@ app.use(cookieParser())
 
 /* ----- serve static ----- */
 app.use(express.static(path.join(__dirname, 'static')));
-app.use(Cors({ origin: ["https://fidotestingnext.herokuapp.com"], credentials: true }))
 app.use('/', defaultroutes)
 app.use('/password', passwordauth)
 app.use('/webauthn', webuathnauth)
