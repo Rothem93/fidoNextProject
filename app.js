@@ -14,7 +14,7 @@ const passwordauth  = require('./routes/password');
 const webuathnauth  = require('./routes/webauthn.js');
 
 const app           = express();
-app.use(cors({ origin: ["https://fidotestingnext.herokuapp.com"], credentials: true }))
+app.use(cors({ origin: [config.origin], credentials: true }))
 
 app.use(bodyParser.json());
 
