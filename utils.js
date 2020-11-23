@@ -15,6 +15,7 @@ let U2F_USER_PRESENTED = 0x01;
  * @return {Boolean}
  */
 let verifySignature = (signature, data, publicKey) => {
+    console.log("verifSignature", signature, data, publicKey)
     return crypto.createVerify('SHA256')
         .update(data)
         .verify(publicKey, signature);
@@ -46,7 +47,7 @@ let generateServerMakeCredRequest = (username, displayName, id) => {
         challenge: randomBase64URLBuffer(32),
 
         rp: {
-            name: "ACME Corporation"
+            name: "BBVA Next Family"
         },
 
         user: {
@@ -60,6 +61,9 @@ let generateServerMakeCredRequest = (username, displayName, id) => {
         pubKeyCredParams: [
             {
                 type: "public-key", alg: -7 // "ES256" IANA COSE Algorithms registry
+            },
+            {
+                type: "public-key", alg: -257 // "RS256" IANA COSE Algorithms registry
             }
         ]
     }
@@ -76,7 +80,7 @@ let generateServerGetAssertion = (authenticators) => {
         allowCredentials.push({
               type: 'public-key',
               id: authr.credID,
-              transports: ['internal']
+              transports: ['usb', 'ble', 'nfc','internal'],
         })
     }
     return {
@@ -199,6 +203,7 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
 
     let response = {'verified': false};
     if(ctapMakeCredResp.fmt === 'fido-u2f') {
+        console.log("ENTRA DENTRO DE FIDO-u2F",ctapMakeCredResp)
         let authrDataStruct = parseMakeCredAuthData(ctapMakeCredResp.authData);
 
         if(!(authrDataStruct.flags & U2F_USER_PRESENTED))
@@ -239,7 +244,7 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
 
         if(response.verified) {
             response.authrInfo = {
-                fmt: 'fido-u2f',
+                fmt: 'packed',
                 publicKey: base64url.encode(publicKey),
                 counter: authrDataStruct.counter,
                 credID: base64url.encode(authrDataStruct.credID)
@@ -267,7 +272,7 @@ let verifyAuthenticatorAttestationResponse = (webAuthnResponse) => {
 
         if(response.verified) {
             response.authrInfo = {
-                fmt: 'fido-u2f',
+                fmt: 'android-safetynet',
                 publicKey: base64url.encode(publicKey),
                 counter: authrDataStruct.counter,
                 credID: base64url.encode(authrDataStruct.credID)
@@ -321,6 +326,26 @@ let verifyAuthenticatorAssertionResponse = (webAuthnResponse, authenticators) =>
 
     let response = {'verified': false};
     if(authr.fmt === 'fido-u2f') {
+        let authrDataStruct  = parseGetAssertAuthData(authenticatorData);
+
+        if(!(authrDataStruct.flags & U2F_USER_PRESENTED))
+            throw new Error('User was NOT presented durring authentication!');
+
+        let clientDataHash   = hash(base64url.toBuffer(webAuthnResponse.response.clientDataJSON))
+        let signatureBase    = Buffer.concat([authrDataStruct.rpIdHash, authrDataStruct.flagsBuf, authrDataStruct.counterBuf, clientDataHash]);
+
+        let publicKey = ASN1toPEM(base64url.toBuffer(authr.publicKey));
+        let signature = base64url.toBuffer(webAuthnResponse.response.signature);
+
+        response.verified = verifySignature(signature, signatureBase, publicKey)
+
+        if(response.verified) {
+            if(response.counter <= authr.counter)
+                throw new Error('Authr counter did not increase!');
+
+            authr.counter = authrDataStruct.counter
+        }
+    } else if(authr.fmt === 'packed') {
         let authrDataStruct  = parseGetAssertAuthData(authenticatorData);
 
         if(!(authrDataStruct.flags & U2F_USER_PRESENTED))

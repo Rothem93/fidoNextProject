@@ -9,7 +9,9 @@ let getMakeCredentialsChallenge = (formBody) => {
         },
         body: JSON.stringify(formBody)
     })
-    .then((response) => response.json())
+    .then((response) => {
+        return response.json()
+    })
     .then((response) => {
         if(response.status !== 'ok')
             throw new Error(`Server responed with error. The message is: ${response.message}`);
@@ -78,7 +80,9 @@ let getGetAssertionChallenge = (formBody) => {
         },
         body: JSON.stringify(formBody)
     })
-    .then((response) => response.json())
+    .then((response) => {
+        return response.json()
+    })
     .then((response) => {
         if(response.status !== 'ok')
             throw new Error(`Server responed with error. The message is: ${response.message}`);
