@@ -1,30 +1,30 @@
-const express       = require('express');
-const bodyParser    = require('body-parser');
+const express = require('express');
+const bodyParser = require('body-parser');
 const cors = require('cors')
 
 const cookieSession = require('cookie-session');
-const cookieParser  = require('cookie-parser');
-const urllib        = require('url');
-const path          = require('path');
-const crypto        = require('crypto');
+const cookieParser = require('cookie-parser');
+const urllib = require('url');
+const path = require('path');
+const crypto = require('crypto');
 
-const config        = require('./config.json');
+const config = require('./config.json');
 const defaultroutes = require('./routes/default');
-const passwordauth  = require('./routes/password');
-const webuathnauth  = require('./routes/webauthn.js');
+const passwordauth = require('./routes/password');
+const webuathnauth = require('./routes/webauthn.js');
 
-const app           = express();
+const app = express();
 app.use(cors({ origin: [config.origin], credentials: true }))
 
 app.use(bodyParser.json());
 
 /* ----- session ----- */
 app.use(cookieSession({
-  name: 'session',
-  keys: [crypto.randomBytes(32).toString('hex')],
+    name: 'session',
+    keys: [crypto.randomBytes(32).toString('hex')],
 
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    // Cookie Options
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
 app.use(cookieParser())
 
