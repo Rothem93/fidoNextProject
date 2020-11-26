@@ -456,22 +456,26 @@ let verifySafetyNetAttestation = (ctapMakeCredResp, webAuthnResponse) => {
     let certificate = certPath[0];
     let signatureBuffer = base64url.toBuffer(SIGNATURE);
 
-    /*let signatureIsValid = crypto.createVerify('sha256')
-        .update(signatureBaseBuffer)
-        .verify(certificate, signatureBuffer);*/
-
     let publicKey = COSEECDHAtoPKCS(authrDataStruct.COSEPublicKey);
-    console.log("--------------------------------------------publicKey-----------------------------------");
-    console.log(publicKey);
-    response.verified = verifySignature(signatureBaseBuffer, certificate, signatureBuffer);
+    console.log("------------------------------PBK-------------------------------------------------------", publicKey);
+    response.verified = crypto.createVerify('sha256')
+        .update(signatureBaseBuffer)
+        .verify(certificate, signatureBuffer);
 
-
-    if (!signatureIsValid)
+    if (!response.verified)
         throw new Error('Failed to verify the signature!');
+
+
+    response.authrInfo = {
+        fmt: 'android-safetynet',
+        publicKey: base64url.encode(publicKey),
+        counter: authrDataStruct.counter,
+        credID: base64url.encode(authrDataStruct.credID)
+    }
 
     /* ----- Verify signature ENDS ----- */
 
-    return true;
+    return response;
 }
 
 
