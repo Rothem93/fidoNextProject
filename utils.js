@@ -350,6 +350,26 @@ let verifyAuthenticatorAssertionResponse = (webAuthnResponse, authenticators) =>
 
             authr.counter = authrDataStruct.counter
         }
+    } else if (authr.fmt === 'android-safetynet') {
+        let authrDataStruct = parseGetAssertAuthData(authenticatorData);
+
+        if (!(authrDataStruct.flags & U2F_USER_PRESENTED))
+            throw new Error('User was NOT presented durring authentication!');
+
+        let clientDataHash = hash(base64url.toBuffer(webAuthnResponse.response.clientDataJSON))
+        let signatureBase = Buffer.concat([authrDataStruct.rpIdHash, authrDataStruct.flagsBuf, authrDataStruct.counterBuf, clientDataHash]);
+
+        let publicKey = ASN1toPEM(base64url.toBuffer(authr.publicKey));
+        let signature = base64url.toBuffer(webAuthnResponse.response.signature);
+
+        response.verified = verifySignature(signature, signatureBase, publicKey)
+
+        if (response.verified) {
+            if (response.counter <= authr.counter)
+                throw new Error('Authr counter did not increase!');
+
+            authr.counter = authrDataStruct.counter
+        }
     }
 
     return response
