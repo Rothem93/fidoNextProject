@@ -53,9 +53,6 @@ $('#register').submit(function(event) {
     getMakeCredentialsChallenge({ username, name })
         .then((response) => {
             let publicKey = preformatMakeCredReq(response);
-            if (await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) {
-                publicKey.authenticatorSelection.authenticatorAttachment = 'platform';
-            }
             return navigator.credentials.create({ publicKey })
         })
         .then((response) => {
