@@ -2,40 +2,40 @@
 
 let getMakeCredentialsChallenge = (formBody) => {
     return fetch('/webauthn/register', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formBody)
-    })
-    .then((response) => {
-        return response.json()
-    })
-    .then((response) => {
-        if(response.status !== 'ok')
-            throw new Error(`Server responed with error. The message is: ${response.message}`);
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formBody)
+        })
+        .then((response) => {
+            return response.json()
+        })
+        .then((response) => {
+            if (response.status !== 'ok')
+                throw new Error(`Server responed with error. The message is: ${response.message}`);
 
-        return response
-    })
+            return response
+        })
 }
 
 let sendWebAuthnResponse = (body) => {
     return fetch('/webauthn/response', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-    })
-    .then((response) => response.json())
-    .then((response) => {
-        if(response.status !== 'ok')
-            throw new Error(`Server responed with error. The message is: ${response.message}`);
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        })
+        .then((response) => response.json())
+        .then((response) => {
+            if (response.status !== 'ok')
+                throw new Error(`Server responed with error. The message is: ${response.message}`);
 
-        return response
-    })
+            return response
+        })
 }
 
 /* Handle for register form submission */
@@ -43,16 +43,19 @@ $('#register').submit(function(event) {
     event.preventDefault();
 
     let username = this.username.value;
-    let name     = this.name.value;
+    let name = this.name.value;
 
-    if(!username || !name) {
+    if (!username || !name) {
         alert('Name or username is missing!')
         return
     }
 
-    getMakeCredentialsChallenge({username, name})
+    getMakeCredentialsChallenge({ username, name })
         .then((response) => {
             let publicKey = preformatMakeCredReq(response);
+            if (await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) {
+                publicKey.authenticatorSelection.authenticatorAttachment = 'platform';
+            }
             return navigator.credentials.create({ publicKey })
         })
         .then((response) => {
@@ -60,8 +63,8 @@ $('#register').submit(function(event) {
             return sendWebAuthnResponse(makeCredResponse)
         })
         .then((response) => {
-            if(response.status === 'ok') {
-                loadMainContainer()   
+            if (response.status === 'ok') {
+                loadMainContainer()
             } else {
                 alert(`Server responed with error. The message is: ${response.message}`);
             }
@@ -73,22 +76,22 @@ $('#register').submit(function(event) {
 
 let getGetAssertionChallenge = (formBody) => {
     return fetch('/webauthn/login', {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formBody)
-    })
-    .then((response) => {
-        return response.json()
-    })
-    .then((response) => {
-        if(response.status !== 'ok')
-            throw new Error(`Server responed with error. The message is: ${response.message}`);
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formBody)
+        })
+        .then((response) => {
+            return response.json()
+        })
+        .then((response) => {
+            if (response.status !== 'ok')
+                throw new Error(`Server responed with error. The message is: ${response.message}`);
 
-        return response
-    })
+            return response
+        })
 }
 
 /* Handle for login form submission */
@@ -97,15 +100,15 @@ $('#login').submit(function(event) {
 
     let username = this.username.value;
 
-    if(!username) {
+    if (!username) {
         alert('Username is missing!')
         return
     }
 
-    getGetAssertionChallenge({username})
+    getGetAssertionChallenge({ username })
         .then((response) => {
             console.log(response)
-            let publicKey = preformatGetAssertReq(response);
+            const publicKey = preformatGetAssertReq(response);
             return navigator.credentials.get({ publicKey })
         })
         .then((response) => {
@@ -114,8 +117,8 @@ $('#login').submit(function(event) {
             return sendWebAuthnResponse(getAssertionResponse)
         })
         .then((response) => {
-            if(response.status === 'ok') {
-                loadMainContainer()   
+            if (response.status === 'ok') {
+                loadMainContainer()
             } else {
                 alert(`Server responed with error. The message is: ${response.message}`);
             }
